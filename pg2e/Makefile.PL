@@ -1,4 +1,3 @@
-use strict;
 use Gtk2 '-init';
 
 if ($Gtk2::VERSION => '1.040') {
