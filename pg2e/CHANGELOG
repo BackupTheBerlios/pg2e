@@ -1,2 +1,1 @@
--INSTALL: Added a warning for perl version issue
--main.pl: Added open file from command line feature. Added Toolbar. Quit sub is now better. Added view menu
+-main.pl: Fixed sub paste, now it's working well
