@@ -26,7 +26,7 @@ use Gtk2 '-init';
 use Gtk2::Pango;
 
 # In the best programming style, we define all global variables here.
-our $VERSION = '1.0rc2';
+our $VERSION = '1.0';
 my $accel;
 my $buff;
 my $curr_name;
@@ -272,8 +272,7 @@ sub save_buff {
 	my $f_name;
 	my $txt;
 	my $local_scrolled = $notebook->get_nth_page($notebook->get_current_page);
-	my $local_viewport = $local_scrolled->get_child;
-	my $local_view = $local_viewport->get_child;
+	my $local_view = $local_scrolled->get_child;
 	my $local_buff = $local_view->get_buffer;
 	
 	my $start_iter = $local_buff->get_start_iter;
@@ -391,7 +390,12 @@ sub quitting {
 	       else {
 		       my $dial = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no', "It seems that are unsaved changes\nYou'd like to save it?");
 		       if($dial->run eq 'yes') {
-			       save_buff;
+			       if(!$curr_name) {
+				       save_buff;
+			       }
+			       else {
+				       save_with_name;
+			       }
 			       Gtk2->main_quit;
 			       exit 0;
 		       }
