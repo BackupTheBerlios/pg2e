@@ -27,7 +27,7 @@ use Manage qw(save_f read_f);
 
 my $accel;
 my $buff;
-my $f_name;
+my $global_txt;
 my $menubar;
 my $menu;
 my $menu_1;
@@ -38,8 +38,8 @@ my $menu_save;
 my $menu_quit;
 my $menu_about;
 my $menu_help;
+my $saved;
 my $scrolled;
-my $txt;
 my $vbox;
 my $view;
 my $window;
@@ -175,12 +175,17 @@ sub new {
 	else {
 		return;
 	}
+	$saved = 0;
+	return;
 }
 
 # Saves the buffer to a file
 sub save_buff {
 	
 	my $local_buff = $view->get_buffer;
+	
+	my $f_name;
+	my $txt;
 	
 	my $start_iter = $local_buff->get_start_iter;
         my $end_iter = $local_buff->get_end_iter;
@@ -195,6 +200,7 @@ sub save_buff {
 	if ($f_chsr->run eq 'accept') {
 		$f_name = $f_chsr->get_filename;
 		$txt = $local_buff->get_text($start_iter, $end_iter, TRUE);
+		$global_txt = $txt;
 		local $/ = "";
 		if(!chomp($txt)) {
 			$txt = "$txt\n"
@@ -212,6 +218,7 @@ sub save_buff {
 	else {
 		$f_chsr->destroy();
 	}
+	$saved = 1;
 	return;
 }
 
@@ -251,11 +258,43 @@ sub read_buff {
 	else {
 		return;
 	}
+	$saved = 0;
 	return;
 }
 
-# Called on quit, to preserve unsaved data and quit from Gtk2->main;
-sub quitting { 
-	#to be rewrited 
-	Gtk2->main_quit;
+# Called on quit, to preserve unsaved data and to quit from Gtk2->main;
+sub quitting {
+
+       my $local_buff = $view->get_buffer;
+       my $local_txt = $local_buff->get_text($local_buff->get_start_iter, $local_buff->get_end_iter, FALSE);
+       if ($saved) {
+	       if($global_txt eq $local_txt) {
+		       Gtk2->main_quit;
+		       exit 0;
+	       }
+	       else {
+		       my $dial = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no', "It seems that are unsaved changes\nYou'd like to save it?");
+		       if($dial->run eq 'yes') {
+			       save_buff;
+			       Gtk2->main_quit;
+			       exit 0;
+		       }
+		       else {
+			       Gtk2->main_quit;
+			       exit 0;
+		       }
+	       }
+       }
+       else {
+	       my $dial = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no', "Do you want to save current buffer?");
+	       if($dial->run eq 'yes') {
+		       save_buff;
+		       Gtk2->main_quit;
+		       exit 0;
+	       }
+	       else {
+		       Gtk2->main_quit;
+		       exit 0;
+	       }
+       }
 }
