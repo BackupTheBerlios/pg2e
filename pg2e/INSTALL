@@ -9,3 +9,9 @@ The default prefix is /usr. You can change it using
 	$ make PREFIX=/prefix
 
 To do make install you must be root
+
+CAUTION
+
+We assume that you have perl-5.8.6 installed. If you dant specify your installed perl version with
+	
+	$ make PERL_VER=version
