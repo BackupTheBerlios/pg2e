@@ -40,6 +40,7 @@ my $menu_about;
 my $menu_help;
 my $saved;
 my $scrolled;
+my $toolbar;
 my $vbox;
 my $view;
 my $window;
@@ -52,9 +53,18 @@ $window->set_default_size(400, 400);
 $window->set_position('center');
 $window->set_title("PG2E - Perl Gtk2 Editor");
 
-$buff = Gtk2::TextBuffer->new();
+
 # Now let's create the TextView
 $view = Gtk2::TextView->new();
+
+if($ARGV[0]) {
+	my $buffer = Gtk2::TextBuffer->new();
+	my $txt = read_f($ARGV[0]);
+	$buffer->set_text($txt);
+	$view->set_buffer($buffer);
+	$saved = 1;
+	$global_txt = $txt;
+}
 
 # Now TextView is ready, but empty, we need input from user or from a file to
 # fill out it. So all we have to do is to wait.
@@ -104,9 +114,17 @@ $menu_help->set_submenu($menu_1);
 
 $menubar->append($menu_help);
 
-#Now regroup all in a VerticalBox
+# After menu it's toolbar time
+$toolbar = Gtk2::Toolbar->new();
+$toolbar->set_style('icons');
+$toolbar->insert_stock('gtk-new', 'New', undef, \&new, undef, -1);
+$toolbar->insert_stock('gtk-open', 'Open', undef, \&read_buff, undef, -1);
+$toolbar->insert_stock('gtk-save-as', 'Save As', undef, \&save_buff, undef, -1);
+
+# Now regroup all in a VerticalBox
 $vbox = Gtk2::VBox->new(FALSE, 0);
 $vbox->pack_start($menubar, FALSE, FALSE, 0);
+$vbox->pack_start($toolbar, FALSE, FALSE, 0);
 $vbox->pack_start($scrolled, TRUE, TRUE, 0);
 
 # Now add the VBox to the Window...
@@ -126,7 +144,8 @@ Gtk2->main();
 
 # This is called if someone wants to now s.th. about the program
 sub about {
-	
+	# Ceates a new dialog, add it a label and two buttons: close and credits.
+	# If clicked, credits calls sub credits, whit dialog as argument.
 	my $dialog = Gtk2::Dialog->new("About", $window, [qw/modal destroy-with-parent/], 'gtk-close' => 'close', 'credits' => 'yes');
 	my $label = Gtk2::Label->new("PG2E - Perl Gtk2 Editor\nVersion 0.1rc2");
 	$dialog->vbox->add($label);
@@ -137,6 +156,7 @@ sub about {
 	$dialog->destroy();
 }
 
+# Called when someone clicks on credits button in about dialog.
 sub credits {
 	
 	my $dial = Gtk2::Dialog->new("Credits", $_, [qw/modal destroy-with-parent/], 'close' => 'close');
@@ -149,7 +169,7 @@ sub credits {
 	$dial->run;
 	$dial->destroy;
 }
-# This create a new buffer, called when s.o. clieck on "New" in the File menu
+# This creates a new buffer, called when s.o. click on "New" in the File menu
 sub new {
 	
 	my $local_buff = $view->get_buffer();
@@ -157,11 +177,10 @@ sub new {
 	my $end_iter = $local_buff->get_end_iter;
 	
 	my $bool;
-	
+	# If the current buffer isn't empty shows a question. 
 	if ($local_buff->get_char_count() != 0) {
-		my $dialog = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'ok', "The buffer isn't empty, going on to create a new buffer will destroy the present buffer. you want to go on?");
-		$dialog->add_button("Cancel", 'cancel');
-		if('cancel' eq $dialog->run) {
+		my $dialog = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no', "The buffer isn't empty, going on to create a new buffer will destroy the present buffer. you want to go on?");
+		if('no' eq $dialog->run) {
 			$bool = 0;
 		}
 		else {
@@ -169,14 +188,14 @@ sub new {
 		}
 		$dialog->destroy();
 	}
-	if ($bool) {
+	if ($bool) {# if previous question was answered yes
 		$local_buff->delete($start_iter, $end_iter);
 		$view->set_buffer($local_buff);
 	}
 	else {
 		return;
 	}
-	$saved = 0;
+	$saved = 0;# We know that the current buffer hasn't been saved.
 	return;
 }
 
@@ -190,7 +209,7 @@ sub save_buff {
 	
 	my $start_iter = $local_buff->get_start_iter;
         my $end_iter = $local_buff->get_end_iter;
-	
+	# If the buffer is empty we have nothing to save.
 	if ($local_buff->get_char_count() == 0) {
 		my $diag = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'error', 'ok', 'The buffer is empty. Nothing to save');
 		$diag->run;
@@ -219,7 +238,7 @@ sub save_buff {
 	else {
 		$f_chsr->destroy();
 	}
-	$saved = 1;
+	$saved = 1;# Now we know that current buffer has been saved.
 	return;
 }
 
@@ -286,7 +305,7 @@ sub quitting {
 		       }
 	       }
        }
-       else {
+       elsif($local_buff->get_char_count != 0) {
 	       my $dial = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no', "Do you want to save current buffer?");
 	       if($dial->run eq 'yes') {
 		       save_buff;
@@ -297,5 +316,9 @@ sub quitting {
 		       Gtk2->main_quit;
 		       exit 0;
 	       }
+       }
+       else {
+	       Gtk2->main_quit;
+	       exit 0;
        }
 }
