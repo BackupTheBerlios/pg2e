@@ -80,6 +80,7 @@ else {
 
 # Since we'll need to scroll, let's create a ScrolledWindow
 $scrolled = Gtk2::ScrolledWindow->new(undef, undef);
+$scrolled->set_policy('automatic', 'automatic');
 $scrolled->add_with_viewport($view);
 
 # Let's create the menu.
@@ -170,9 +171,9 @@ $window->show_all();
 
 # Start lopping
 Gtk2->main();
-# The program would never reach this point, but we give a false instruction just
-# in case
-0;
+# The program should never reach this point, but we give an exit with no errors just in case
+
+exit 0;
 
 # Subroutines section:
 
@@ -385,8 +386,9 @@ sub quitting {
 sub copy {
 	
 	my $local_buff = $view->get_buffer;
-	my $display = Gtk2::Gdk::Display->get_default;
-	my $atom = Gtk2::Gdk::Atom->intern("PRIMARY", FALSE);
+	my $screen = $window->get_screen;
+	my $display = $screen->get_display;
+	my $atom = Gtk2::Gdk::Atom->intern("SELECTION", FALSE);
 	my $clip = Gtk2::Clipboard->get_for_display($display, $atom);
 	$local_buff->copy_clipboard($clip);
 }
