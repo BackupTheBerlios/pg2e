@@ -1,9 +1,12 @@
-use Gtk2 '-init';
+use 5.008;
+use ExtUtils::MakeMaker;
 
-if ($Gtk2::VERSION => '1.040') {
+`mv lib/main.pl pg2e`;
 
-	`cp Makefile.am Makefile`;
-}
-else {
-	print "Gtk2-Perl 1.040 or higher needed";
-}
+WriteMakefile(
+	'NAME' => 'PG2E',
+	'EXE_FILES' => [ 'pg2e' ],
+	'PREREQ_PM' => { 'Gtk2' => '1.040' },
+	'AUTHOR' => 'Stefano Esposito <ragnarok@email.it>',
+	'clean' => { FILES => 'pg2e' },
+);
