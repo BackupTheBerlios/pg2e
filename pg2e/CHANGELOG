@@ -1,1 +1,3 @@
+# $Id: CHANGELOG,v 1.12 2005/02/13 22:12:42 ragnarok Exp $
+
 -main.pl: All $scrollbar->add_with_viewport changed to $scrollbar->add resolving scroll problems. Window title changes dinamically when a notebook's page is selected. When saving a page the tab_label changes to the filename, if it isn't already the filename itself. Cut & copy finally fixed. Fixed save on quit. our $VERSION setted to 1.0.

@@ -17,6 +17,7 @@
 #   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA  #
 #   									       #
 ################################################################################
+# $Id: Manage.pm,v 1.2 2005/02/13 22:12:42 ragnarok Exp $
 
 package Manage;
 

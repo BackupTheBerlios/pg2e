@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-################################################################################
+###############################################################################
 #									       #
 # This file is part of Pg2e.						       #
 # 									       #
@@ -17,6 +17,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    #
 #       						                       #
 ################################################################################
+# $Id: main.pl,v 1.2 2005/02/13 22:12:42 ragnarok Exp $
+
 
 use strict;
 use Manage qw(save_f read_f);
@@ -310,10 +312,12 @@ sub save_buff {
 	if(!$ARGV[0]) {
 		$window->set_title("PG2E - Perl Gtk2 Editor - $f_name");
 	}
-	my $local_label = $notebook->get_tab_label($notebook->get_nth_page($notebook->get_current_page));
+	my $curr_page = $notebook->get_nth_page($notebook->get_current_page);
+	my $local_label = $notebook->get_tab_label($curr_page);
 	my $label_txt = $local_label->get_text;
 	if($label_txt ne $f_name) {
-		$notebook->set_tab_label($notebook->get_current_page, Gtk2::Label->new($f_name));
+		my $lbl = Gtk2::Label->new($f_name);
+		$notebook->set_tab_label($curr_page, $lbl);
 	}
 	$curr_name = $f_name;
 	$saved = TRUE;# Now we know that current buffer has been saved.
