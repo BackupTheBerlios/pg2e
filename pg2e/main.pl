@@ -27,6 +27,7 @@ use Manage qw(save_f read_f);
 
 my $accel;
 my $buff;
+my $f_name;
 my $menubar;
 my $menu;
 my $menu_1;
@@ -38,6 +39,7 @@ my $menu_quit;
 my $menu_about;
 my $menu_help;
 my $scrolled;
+my $txt;
 my $vbox;
 my $view;
 my $window;
@@ -50,6 +52,7 @@ $window->set_default_size(400, 400);
 $window->set_position('center');
 $window->set_title("PG2E - Perl Gtk2 Editor");
 
+$buff = Gtk2::TextBuffer->new();
 # Now let's create the TextView
 $view = Gtk2::TextView->new();
 
@@ -179,9 +182,6 @@ sub save_buff {
 	
 	my $local_buff = $view->get_buffer;
 	
-	my $txt;
-	my $name;
-	
 	my $start_iter = $local_buff->get_start_iter;
         my $end_iter = $local_buff->get_end_iter;
 	
@@ -193,22 +193,21 @@ sub save_buff {
 	}
 	my $f_chsr = Gtk2::FileChooserDialog->new("Save", $window, "save", 'gtk-save', 'accept', 'gtk-cancel', 'cancel');
 	if ($f_chsr->run eq 'accept') {
-		$name = $f_chsr->get_filename;
+		$f_name = $f_chsr->get_filename;
 		$txt = $local_buff->get_text($start_iter, $end_iter, TRUE);
 		local $/ = "";
 		if(!chomp($txt)) {
 			$txt = "$txt\n"
 		}
-		my $ver = save_f($name, $txt); # Defined in Manage.pm
+		my $ver = save_f($f_name, $txt, FALSE); # Defined in Manage.pm
 		$f_chsr->destroy();
 		if (!$ver) {
-			my $err = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no',  "File $name alredy existing.\nOverwrite?");
+			my $err = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no',  "File $f_name alredy existing.\nOverwrite?");
 			if($err->run ne 'no') {
-				save_f($name, $txt, TRUE);
+				save_f($f_name, $txt, TRUE);
 			}
 			$err->destroy();
 		}
-		$buff = $view->get_buffer;
 	}
 	else {
 		$f_chsr->destroy();
@@ -225,13 +224,12 @@ sub read_buff {
 	my $txt;
 	
 	if ($local_buff->get_char_count != 0) {
-		my $diag = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'ok', "The buffer isn't empty. Reading from file will destroy this buffer.\nYou want to read from a file?");
-		$diag->add_button('cancel', 'no');
-		if ($diag->run eq 'no') {
-			$go_on = 0;
+		my $diag = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no', "The buffer isn't empty. Reading from file will destroy this buffer.\nYou want to read from a file?");
+		if ($diag->run eq 'yes') {
+			$go_on = 1;
 		}
 		else {
-			$go_on = 1;
+			$go_on = 0;
 		}
 		$diag->destroy;
 	}
@@ -241,7 +239,7 @@ sub read_buff {
 			$f_name = $f_chsr->get_filename;
 			$txt = read_f($f_name);
 			$local_buff = Gtk2::TextBuffer->new();
-			$local_buff->insert($local_buff->get_start_iter, $txt);
+			$local_buff->set_text($txt);
 			$view->set_buffer($local_buff);
 			$f_chsr->destroy;
 		}
@@ -256,26 +254,8 @@ sub read_buff {
 	return;
 }
 
-sub quitting {
-	
-	my $local_buff = $view->get_buffer;
-	if($buff) {
-		if ($buff eq $local_buff) {
-			Gtk2->main_quit;
-			exit 0;
-		}
-		else {
-			my $dial = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no', 'It seems that you modified the buffer since last change\NYou want to save changes?');
-			if($dial->run eq 'yes') {
-				save_buff;
-				$dial->destroy;
-			}
-			else {
-				Gtk2->main_quit;
-			}
-		}
-	}
-	else {
-		Gtk2->main_quit;
-	}
+# Called on quit, to preserve unsaved data and quit from Gtk2->main;
+sub quitting { 
+	#to be rewrited 
+	Gtk2->main_quit;
 }

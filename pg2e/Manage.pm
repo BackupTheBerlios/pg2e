@@ -43,9 +43,9 @@ sub save_f {
 
 sub read_f {
 
-	my ($name) = $_[0];
+	my ($f_name) = $_[0];
 	my $txt = "";
-	open(R, "<$name");
+	open(R, "<$f_name");
 	while(<R>) {
 		if ($txt) {
 			$txt = $txt.$_;
