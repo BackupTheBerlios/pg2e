@@ -128,7 +128,7 @@ Gtk2->main();
 sub about {
 	
 	my $dialog = Gtk2::Dialog->new("About", $window, [qw/modal destroy-with-parent/], 'gtk-close' => 'close', 'credits' => 'yes');
-	my $label = Gtk2::Label->new("PG2E - Perl Gtk2 Editor\nVersion 0.1rc1");
+	my $label = Gtk2::Label->new("PG2E - Perl Gtk2 Editor\nVersion 0.1rc2");
 	$dialog->vbox->add($label);
 	$label->show();
 	if($dialog->run eq 'yes') {
@@ -143,6 +143,7 @@ sub credits {
 	my $local_buff = Gtk2::TextBuffer->new();
 	$local_buff->set_text('Stefano Esposito <yankeegohome@crux-it.org>');
 	my $local_view = Gtk2::TextView->new_with_buffer($local_buff);
+	$local_view->set_editable(FALSE);
 	$dial->vbox->add($local_view);
 	$local_view->show();
 	$dial->run;
