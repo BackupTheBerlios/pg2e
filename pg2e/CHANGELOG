@@ -1,1 +1,1 @@
--main.pl: Fixed sub paste, now it's working well. Scrolled window policy set to automatic for both scrollbar
+-main.pl: added pango layout

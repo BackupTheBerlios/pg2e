@@ -19,9 +19,10 @@
 ################################################################################
 
 use strict;
-use Gtk2 '-init';
-use Glib qw(FALSE TRUE);
 use Manage qw(save_f read_f);
+use Glib qw(FALSE TRUE);
+use Gtk2 '-init';
+use Gtk2::Pango;
 
 # In the best programming style, we define all global variables here.
 
@@ -43,12 +44,16 @@ my $menu_save;
 my $menu_save_as;
 my $menu_toolbar;
 my $menu_view;
+my $pango_context;
+my $pango_layout;
 my $saved;
 my $scrolled;
 my $toolbar;
 my $vbox;
 my $view;
 my $window;
+my $win_height;
+my $win_width;
 
 # Now we create the window, and connect it all signals we need
 $window = Gtk2::Window->new('toplevel');
@@ -61,6 +66,12 @@ $window->set_position('center');
 # Now let's create the TextView
 $view = Gtk2::TextView->new();
 $view->set_right_margin(10);
+$view->set_wrap_mode("word");
+
+$pango_context = $view->get_pango_context;
+$pango_layout = Gtk2::Pango::Layout->new($pango_context);
+$pango_layout->set_width(800);
+$pango_layout->set_wrap("word");
 
 if($ARGV[0]) {
 	my $buffer = Gtk2::TextBuffer->new();
