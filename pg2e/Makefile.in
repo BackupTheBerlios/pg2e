@@ -1,0 +1,31 @@
+# Makefile for aegis.
+# $Id: Makefile.in,v 1.1 2005/02/13 15:27:58 ragnarok Exp $
+
+prefix=@PREFIX@
+perl_ver=@PERL_VER@
+name=pg2e
+
+all: build
+
+build:
+	mkdir blib
+	cp lib/*.pm blib
+
+install:
+	install -d -m 0755 $(DESTDIR)$(prefix)/bin 
+	install -d -m 0755 $(DESTDIR)$(prefix)/share/pixmaps
+	install -d -m 0755 $(DESTDIR)$(prefix)/lib/perl5/site_perl/$(perl_ver)
+	install -m 0755 bin/main.pl $(DESTDIR)$(prefix)/bin/$(name)
+	install -m 0644 images/$(name).jpg $(DESTDIR)$(prefix)/share/pixmaps/
+	install -m 0644 blib/Manage.pm $(DESTDIR)$(prefix)/lib/perl5/site_perl/$(perl_ver)/
+	install -m 0644 blib/Icon.pm $(DESTDIR)$(prefix)/lib/perl5/site_perl/$(perl_ver)/
+
+clean:
+	rm -rf blib
+	rm -f  Makefile
+
+uninstall:
+	rm -f $(DESTDIR)$(prefix)/bin/$(name)
+	rm -f $(DESTDIR)$(prefix)/share/pixmaps/$(name).png
+	rm -rf $(DESTDIR)$(prefix)/share/$(name)/
+	find $(DESTDIR)$(prefix)/share/locale -print | grep -i $(name) | xargs rm -rf
