@@ -11,7 +11,11 @@ use strict;
 use Gtk2 '-init';
 
 sub get_icon {
-
-	my $icon = Gtk2::Gdk::Pixbuf->new_from_file("mascotte.jpg");
-	return $icon;
+	if (-e './mascotte.jpg') {
+		my $icon = Gtk2::Gdk::Pixbuf->new_from_file('mascotte.jpg');
+		return $icon;
+	}
+	else {
+		return;
+	}
 }

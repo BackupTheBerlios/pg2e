@@ -31,6 +31,7 @@ my $accel;
 my $buff;
 my $curr_name;
 my $global_txt;
+my $icon;
 my $menubar;
 my $menu_0;
 my $menu_1;
@@ -63,7 +64,10 @@ my $win_width;
 $window = Gtk2::Window->new('toplevel');
 $window->signal_connect(delete_event => \&quitting);
 $window->signal_connect(destroy => \&quitting);
-$window->set_default_icon(get_icon);
+$icon = get_icon;
+if($icon) {
+	$window->set_default_icon($icon);
+}
 $window->set_default_size(800, 400);
 $window->set_position('center');
 
@@ -417,7 +421,7 @@ sub copy {
 	my $screen = $window->get_screen;
 	my $display = $screen->get_display;
 	my $atom = Gtk2::Gdk::Atom->intern("SELECTION", FALSE);
-	my $clip = Gtk2::Clipboard->get_for_display($display, $atom);
+	my $clip = Gtk2::Clipboard->get($atom);
 	$local_buff->copy_clipboard($clip);
 }
 
@@ -426,7 +430,7 @@ sub paste {
 	my $local_buff = $view->get_buffer;
 	my $display = Gtk2::Gdk::Display->get_default;
 	my $atom = Gtk2::Gdk::Atom->intern("CLIPBOARD", FALSE);
-	my $clip = Gtk2::Clipboard->get_for_display($display, $atom);
+	my $clip = Gtk2::Clipboard->get($atom);
 	$local_buff->paste_clipboard($clip, undef, TRUE);
 }
 
