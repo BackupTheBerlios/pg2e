@@ -1,19 +1,19 @@
 #!/usr/bin/perl -w
 ################################################################################
 #									       #
-# This file is part of Foobar.						       #
+# This file is part of Pg2e.						       #
 # 									       #
-# Foobar is free software; you can redistribute it and/or modify               #
+# Pg2e is free software; you can redistribute it and/or modify               #
 # it under the terms of the GNU General Public License as published by         #
 # the Free Software Foundation; either version 2 of the License, or            #
 # (at your option) any later version.					       #
 # 									       #
-# Foobar is distributed in the hope that it will be useful,                    #
+# Pg2e is distributed in the hope that it will be useful,                    #
 # but WITHOUT ANY WARRANTY; without even the implied warranty of               #
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		       #
 # GNU General Public License for more details.				       #
 # You should have received a copy of the GNU General Public License	       #
-# along with Foobar; if not, write to the Free Software			       #
+# along with Pg2e; if not, write to the Free Software			       #
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA    #
 #       						                       #
 ################################################################################
@@ -355,7 +355,7 @@ sub quitting {
        }
 }
 
-# Next is called when the user clicks on the toolbar copy button
+# Copy/Paste/Cut subroutines, called whe user clicks on the toolbar buttons
 sub copy {
 	
 	my $local_buff = $view->get_buffer;
@@ -365,7 +365,6 @@ sub copy {
 	$local_buff->copy_clipboard($clip);
 }
 
-# Callback for the toolbar paste button
 sub paste {
 
 	my $local_buff = $view->get_buffer;
