@@ -198,6 +198,7 @@ sub credits {
 	$local_buff->set_text('Stefano Esposito <yankeegohome@crux-it.org>');
 	my $local_view = Gtk2::TextView->new_with_buffer($local_buff);
 	$local_view->set_editable(FALSE);
+	$local_view->set_cursor_visible(FALSE);
 	$dial->vbox->add($local_view);
 	$local_view->show();
 	$dial->run;
