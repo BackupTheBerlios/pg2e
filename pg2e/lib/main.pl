@@ -31,7 +31,7 @@ my $accel;
 my $buff;
 my $curr_name;
 my $global_txt;
-my $icon;
+my $icon = get_icon;
 my $menubar;
 my $menu_0;
 my $menu_1;
@@ -64,7 +64,6 @@ my $win_width;
 $window = Gtk2::Window->new('toplevel');
 $window->signal_connect(delete_event => \&quitting);
 $window->signal_connect(destroy => \&quitting);
-$icon = get_icon;
 if($icon) {
 	$window->set_default_icon($icon);
 }
