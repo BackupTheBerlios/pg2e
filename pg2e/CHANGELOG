@@ -1,1 +1,3 @@
--main.pl: Added Auto new paragraph menu item and sub toggle_par
+-main.pl: Added Auto new paragraph menu item and sub toggle_par, Setted default icon
+-Icon.pm: Created. Contains a function to get icon from mascotte.jpg
+-mascotte.jpg: Added. A nice picture found on the net

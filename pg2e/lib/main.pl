@@ -20,6 +20,7 @@
 
 use strict;
 use Manage qw(save_f read_f);
+use Icon qw(get_icon);
 use Glib qw(FALSE TRUE);
 use Gtk2 '-init';
 use Gtk2::Pango;
@@ -60,6 +61,7 @@ my $win_width;
 $window = Gtk2::Window->new('toplevel');
 $window->signal_connect(delete_event => \&quitting);
 $window->signal_connect(destroy => \&quitting);
+$window->set_default_icon(get_icon);
 $window->set_default_size(800, 400);
 $window->set_position('center');
 

@@ -4,5 +4,7 @@ INSTALL
 LICENSE
 Makefile.PL
 MANIFEST			This list of files
+lib/Icon.pm
 lib/Manage.pm
+lib/mascotte.jpg
 TODO
