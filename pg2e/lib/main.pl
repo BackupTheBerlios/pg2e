@@ -86,7 +86,7 @@ if($ARGV[0]) {
 	my $txt = read_f($ARGV[0]);
 	$buffer->set_text($txt);
 	$view->set_buffer($buffer);
-	$saved = 1;
+	$saved = TRUE;
 	$global_txt = $txt;
 	$window->set_title("PG2E - Perl Gtk2 Editor - $ARGV[0]");
 	$curr_name = $ARGV[0];
@@ -262,7 +262,7 @@ sub new {
 	}
 	$ARGV[0] = undef;
 	$curr_name = undef;
-	$saved = 0;# We know that the current buffer hasn't been saved.
+	$saved = FALSE;# We know that the current buffer hasn't been saved.
 	return;
 }
 
@@ -317,7 +317,7 @@ sub save_buff {
 		$notebook->set_tab_label($notebook->get_current_page, Gtk2::Label->new($f_name));
 	}
 	$curr_name = $f_name;
-	$saved = 1;# Now we know that current buffer has been saved.
+	$saved = TRUE;# Now we know that current buffer has been saved.
 	return;
 }
 
@@ -330,7 +330,7 @@ sub save_with_name {
 		my $local_buff = $view->get_buffer;
 		my $txt = $local_buff->get_text($local_buff->get_start_iter, $local_buff->get_end_iter, FALSE);
 		save_f($curr_name, $txt, TRUE);
-		$saved = 1;
+		$saved = TRUE;
 		$global_txt = $txt;
 	}
 	return;	
@@ -374,7 +374,7 @@ sub read_buff {
 	}
 
 	$curr_name = $f_name;
-	$saved = 0;
+	$saved = TRUE;
 	return;
 }
 
