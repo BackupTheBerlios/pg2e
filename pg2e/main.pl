@@ -35,6 +35,7 @@ my $menu_0;
 my $menu_1;
 my $menu_2;
 my $menu_about;
+my $menu_new_par;
 my $menu_file;
 my $menu_help;
 my $menu_new;
@@ -66,12 +67,12 @@ $window->set_position('center');
 # Now let's create the TextView
 $view = Gtk2::TextView->new();
 $view->set_right_margin(10);
-$view->set_wrap_mode("word");
+$view->set_wrap_mode("word_char");
 
 $pango_context = $view->get_pango_context;
 $pango_layout = Gtk2::Pango::Layout->new($pango_context);
 $pango_layout->set_width(800);
-$pango_layout->set_wrap("word");
+$pango_layout->set_wrap("word_char");
 
 if($ARGV[0]) {
 	my $buffer = Gtk2::TextBuffer->new();
@@ -129,10 +130,16 @@ $menu_file->set_submenu($menu_0);
 $menubar->append($menu_file);
 
 $menu_1 = Gtk2::Menu->new();
+
 $menu_toolbar = Gtk2::CheckMenuItem->new_with_mnemonic('_Toolbar');
 $menu_toolbar->set_active(TRUE);
 $menu_toolbar->signal_connect('toggled', \&toggle_toolbar);
 $menu_1->append($menu_toolbar);
+
+$menu_new_par = Gtk2::CheckMenuItem->new_with_mnemonic('Automatic new _paragraph');
+$menu_new_par->set_active(TRUE);
+$menu_new_par->signal_connect('toggled', \&toggle_par);
+$menu_1->append($menu_new_par);
 
 $menu_view = Gtk2::MenuItem->new_with_mnemonic("_View");
 $menu_view->set_submenu($menu_1);
@@ -443,10 +450,24 @@ sub justify {
 
 sub toggle_toolbar {
 
-	if(!$menu_toolbar->get_active()) {
+	if(!$menu_toolbar->get_active) {
 		$toolbar->hide_all;
 	}
 	else {
 		$toolbar->show_all;
+	}
+}
+
+sub toggle_par {
+
+	if($menu_new_par->get_active) {
+		$view->set_wrap_mode("word_char");
+		($win_width, $win_height) = $window->get_size;
+		$pango_layout->set_width($win_width);
+		$pango_layout->set_wrap("word_char");
+	}
+	else {
+		$view->set_wrap_mode("none");
+		$pango_layout->set_width(-1);
 	}
 }
