@@ -31,13 +31,16 @@ my $global_txt;
 my $menubar;
 my $menu;
 my $menu_1;
+my $menu_2;
+my $menu_about;
 my $menu_file;
+my $menu_help;
 my $menu_new;
 my $menu_open;
-my $menu_save;
 my $menu_quit;
-my $menu_about;
-my $menu_help;
+my $menu_save;
+my $menu_toolbar;
+my $menu_view;
 my $saved;
 my $scrolled;
 my $toolbar;
@@ -49,13 +52,13 @@ my $window;
 $window = Gtk2::Window->new('toplevel');
 $window->signal_connect(delete_event => \&quitting);
 $window->signal_connect(destroy => \&quitting);
-$window->set_default_size(400, 400);
+$window->set_default_size(800, 400);
 $window->set_position('center');
-$window->set_title("PG2E - Perl Gtk2 Editor");
 
 
 # Now let's create the TextView
 $view = Gtk2::TextView->new();
+$view->set_right_margin(10);
 
 if($ARGV[0]) {
 	my $buffer = Gtk2::TextBuffer->new();
@@ -64,8 +67,11 @@ if($ARGV[0]) {
 	$view->set_buffer($buffer);
 	$saved = 1;
 	$global_txt = $txt;
+	$window->set_title("PG2E - Perl Gtk2 Editor - $ARGV[0]");
 }
-
+else {
+	$window->set_title("PG2E - Perl Gtk2 Editor - New Buffer");
+}
 # Now TextView is ready, but empty, we need input from user or from a file to
 # fill out it. So all we have to do is to wait.
 
@@ -104,15 +110,27 @@ $menu_file->set_submenu($menu);
 $menubar->append($menu_file);
 
 $menu_1 = Gtk2::Menu->new();
+$menu_toolbar = Gtk2::CheckMenuItem->new_with_mnemonic('_Toolbar');
+$menu_toolbar->set_active(TRUE);
+$menu_toolbar->signal_connect('toggled', \&toggle_toolbar);
+$menu_1->append($menu_toolbar);
+
+$menu_view = Gtk2::MenuItem->new_with_mnemonic("_View");
+$menu_view->set_submenu($menu_1);
+
+$menubar->append($menu_view);
+
+$menu_2 = Gtk2::Menu->new();
 $accel->connect('97', ['control-mask'], ['visible'], \&credits);
 $menu_about = Gtk2::MenuItem->new_with_mnemonic("_About     Ctrl+A");
 $menu_about->signal_connect("activate", \&about);
-$menu_1->append($menu_about);
+$menu_2->append($menu_about);
 
 $menu_help = Gtk2::MenuItem->new_with_mnemonic("_Help");
-$menu_help->set_submenu($menu_1);
+$menu_help->set_submenu($menu_2);
 
 $menubar->append($menu_help);
+
 
 # After menu it's toolbar time
 $toolbar = Gtk2::Toolbar->new();
@@ -120,6 +138,14 @@ $toolbar->set_style('icons');
 $toolbar->insert_stock('gtk-new', 'New', undef, \&new, undef, -1);
 $toolbar->insert_stock('gtk-open', 'Open', undef, \&read_buff, undef, -1);
 $toolbar->insert_stock('gtk-save-as', 'Save As', undef, \&save_buff, undef, -1);
+$toolbar->insert_space(10);
+$toolbar->insert_stock('gtk-copy', 'Copy to clipboard', undef, \&copy, undef, -1);
+$toolbar->insert_stock('gtk-paste', 'Paste', undef, \&paste, undef, -1);
+$toolbar->insert_stock('gtk-cut', 'Cut', undef, \&cut, undef, -1);
+$toolbar->insert_space(10);
+$toolbar->insert_stock('gtk-justify-left', 'Left Align', undef, \&left, undef, -1);
+$toolbar->insert_stock('gtk-justify-center', 'Center', undef, \&center, undef, -1);
+$toolbar->insert_stock('gtk-justify-right', 'Right Align', undef, \&right, undef, -1);
 
 # Now regroup all in a VerticalBox
 $vbox = Gtk2::VBox->new(FALSE, 0);
@@ -195,6 +221,8 @@ sub new {
 	else {
 		return;
 	}
+	$window->set_title("PG2E - Perl Gtk2 Editor - New Buffer");
+	$ARGV[0] = undef;
 	$saved = 0;# We know that the current buffer hasn't been saved.
 	return;
 }
@@ -238,6 +266,9 @@ sub save_buff {
 	else {
 		$f_chsr->destroy();
 	}
+	if(!$ARGV[0]) {
+		$window->set_title("PG2E - Perl Gtk2 Editor - $f_name");
+	}
 	$saved = 1;# Now we know that current buffer has been saved.
 	return;
 }
@@ -278,6 +309,7 @@ sub read_buff {
 	else {
 		return;
 	}
+	$window->set_title("PG2E - Perl Gtk2 Editor - $f_name");
 	$saved = 0;
 	return;
 }
@@ -321,4 +353,59 @@ sub quitting {
 	       Gtk2->main_quit;
 	       exit 0;
        }
+}
+
+# Next is called when the user clicks on the toolbar copy button
+sub copy {
+	
+	my $local_buff = $view->get_buffer;
+	my $display = Gtk2::Gdk::Display->get_default;
+	my $atom = Gtk2::Gdk::Atom->new('gdk-selection-clipboard', TRUE);
+	my $clip = Gtk2::Clipboard->get_for_display($display, $atom);
+	$local_buff->copy_clipboard($clip);
+}
+
+# Callback for the toolbar paste button
+sub paste {
+
+	my $local_buff = $view->get_buffer;
+	my $display = Gtk2::Gdk::Display->get_default;
+	my $atom = Gtk2::Gdk::Atom->new('gdk-selection-clipboard', TRUE);
+	my $clip = Gtk2::Clipboard->get_for_display($display, $atom);
+	$local_buff->paste_clipboard($clip, undef, TRUE);
+}
+
+sub cut {
+
+	my $local_buff = $view->get_buffer;
+	my $display = Gtk2::Gdk::Display->get_default;
+	my $atom = Gtk2::Gdk::Atom->new('gdk-selection-clipboard', TRUE);
+	my $clip = Gtk2::Clipboard->get_for_display($display, $atom);
+	$local_buff->cut_clipboard($clip, TRUE);
+}
+
+# Text justify subroutines
+sub right {
+
+	$view->set_justification('right');
+}
+
+sub left {
+
+	$view->set_justification('left');
+}
+
+sub center {
+
+	$view->set_justification('center');
+}
+
+sub toggle_toolbar {
+
+	if(!$menu_toolbar->get_active()) {
+		$toolbar->hide_all;
+	}
+	else {
+		$toolbar->show_all;
+	}
 }
