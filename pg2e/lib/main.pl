@@ -26,7 +26,7 @@ use Gtk2 '-init';
 use Gtk2::Pango;
 
 # In the best programming style, we define all global variables here.
-
+our $VERSION = '1.0rc2';
 my $accel;
 my $buff;
 my $curr_name;
@@ -103,9 +103,10 @@ else {
 # Since we'll need to scroll, let's create a ScrolledWindow
 $scrolled = Gtk2::ScrolledWindow->new(undef, undef);
 $scrolled->set_policy('automatic', 'automatic');
-$scrolled->add_with_viewport($view);
+$scrolled->add($view);
 
 $notebook = Gtk2::Notebook->new();
+$notebook->signal_connect("switch-page", \&note_ch_page);
 $notebook->append_page($scrolled, Gtk2::Label->new($note_title));
 
 # Let's create the menu.
@@ -214,7 +215,7 @@ sub about {
 	# Ceates a new dialog, add it a label and two buttons: close and credits.
 	# If clicked, credits calls sub credits, whit dialog as argument.
 	my $dialog = Gtk2::Dialog->new("About", $window, [qw/modal destroy-with-parent/], 'gtk-close' => 'close', 'credits' => 'yes');
-	my $label = Gtk2::Label->new("PG2E - Perl Gtk2 Editor\nVersion 0.1rc2");
+	my $label = Gtk2::Label->new("PG2E - Perl Gtk2 Editor\nVersion $VERSION");
 	$dialog->vbox->add($label);
 	$label->show();
 	if($dialog->run eq 'yes') {
@@ -253,7 +254,7 @@ sub new {
 		my $local_scrolled = Gtk2::ScrolledWindow->new(undef, undef);
 		$local_scrolled->set_policy("automatic", "automatic");
 		my $local_view = Gtk2::TextView->new();
-		$local_scrolled->add_with_viewport($local_view);
+		$local_scrolled->add($local_view);
 		$notebook->append_page($local_scrolled, Gtk2::Label->new("Untitled"));
 		$notebook->show_all;
 	}
@@ -311,6 +312,11 @@ sub save_buff {
 	if(!$ARGV[0]) {
 		$window->set_title("PG2E - Perl Gtk2 Editor - $f_name");
 	}
+	my $local_label = $notebook->get_tab_label($notebook->get_nth_page($notebook->get_current_page));
+	my $label_txt = $local_label->get_text;
+	if($label_txt ne $f_name) {
+		$notebook->set_tab_label($notebook->get_current_page, Gtk2::Label->new($f_name));
+	}
 	$curr_name = $f_name;
 	$saved = 1;# Now we know that current buffer has been saved.
 	return;
@@ -352,7 +358,7 @@ sub read_buff {
 		if(!$empty) {
 			$local_view->set_buffer($local_buff);
 			$f_chsr->destroy;
-			$local_scrolled->add_with_viewport($local_view);
+			$local_scrolled->add($local_view);
 			$notebook->append_page($local_scrolled, Gtk2::Label->new($f_name));
 			$notebook->show_all;
 		}
@@ -484,4 +490,12 @@ sub toggle_par {
 		$view->set_wrap_mode("none");
 		$pango_layout->set_width(-1);
 	}
+}
+
+sub note_ch_page {
+	my $curr_page_n = $_[2];
+
+	my $local_label = $notebook->get_tab_label($notebook->get_nth_page($curr_page_n));
+	my $local_txt = $local_label->get_text;
+	$window->set_title("PG2E - Perl Gtk2 Editor - $local_txt");
 }

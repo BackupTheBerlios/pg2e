@@ -1,3 +1,1 @@
--main.pl: Added Auto new paragraph menu item and sub toggle_par, Setted default icon
--Icon.pm: Created. Contains a function to get icon from mascotte.jpg
--mascotte.jpg: Added. A nice picture found on the net
+-main.pl: All $scrollbar->add_with_viewport changed to $scrollbar->add resolving scroll problems. Window title changes dinamically when a notebook's page is selected. When saving a page the tab_label changes to the filename, if it isn't already the filename itself.
