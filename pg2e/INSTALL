@@ -1,0 +1,11 @@
+To install Pg2e, simply run those commands:
+
+	$ perl Makefile.PL
+	$ make
+	# make install
+
+The default prefix is /usr. You can change it using 
+	
+	$ make PREFIX=/prefix
+
+To do make install you must be root
