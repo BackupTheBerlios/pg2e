@@ -421,13 +421,13 @@ sub quitting {
 
 # Copy/Paste/Cut subroutines, called whe user clicks on the toolbar buttons
 sub copy {
-	
 	my $local_buff = $view->get_buffer;
 	my $screen = $window->get_screen;
 	my $display = $screen->get_display;
-	my $atom = Gtk2::Gdk::Atom->intern("SELECTION", FALSE);
+	my $atom = Gtk2::Gdk::Atom->intern("CLIPBOARD", FALSE);
 	my $clip = Gtk2::Clipboard->get($atom);
 	$local_buff->copy_clipboard($clip);
+	return;
 }
 
 sub paste {
@@ -443,7 +443,7 @@ sub cut {
 
 	my $local_buff = $view->get_buffer;
 	my $display = Gtk2::Gdk::Display->get_default;
-	my $atom = Gtk2::Gdk::Atom->intern("PRIMARY", FALSE);
+	my $atom = Gtk2::Gdk::Atom->intern("CLIPBOARD", FALSE);
 	my $clip = Gtk2::Clipboard->get_for_display($display, $atom);
 	$local_buff->cut_clipboard($clip, TRUE);
 }
