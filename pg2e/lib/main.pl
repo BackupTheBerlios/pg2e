@@ -29,8 +29,8 @@ use Gtk2::Pango;
 
 my $accel;
 my $buff;
-my $global_txt;
 my $curr_name;
+my $global_txt;
 my $menubar;
 my $menu_0;
 my $menu_1;
@@ -46,6 +46,8 @@ my $menu_save;
 my $menu_save_as;
 my $menu_toolbar;
 my $menu_view;
+my $notebook;
+my $note_title;
 my $pango_context;
 my $pango_layout;
 my $saved;
@@ -85,9 +87,11 @@ if($ARGV[0]) {
 	$global_txt = $txt;
 	$window->set_title("PG2E - Perl Gtk2 Editor - $ARGV[0]");
 	$curr_name = $ARGV[0];
+	$note_title = $ARGV[0];
 }
 else {
-	$window->set_title("PG2E - Perl Gtk2 Editor - New Buffer");
+	$window->set_title("PG2E - Perl Gtk2 Editor - Untitled");
+	$note_title = "Untitled";
 }
 # Now TextView is ready, but empty, we need input from user or from a file to
 # fill out it. So all we have to do is to wait.
@@ -96,6 +100,9 @@ else {
 $scrolled = Gtk2::ScrolledWindow->new(undef, undef);
 $scrolled->set_policy('automatic', 'automatic');
 $scrolled->add_with_viewport($view);
+
+$notebook = Gtk2::Notebook->new();
+$notebook->append_page($scrolled, Gtk2::Label->new($note_title));
 
 # Let's create the menu.
 $accel = Gtk2::AccelGroup->new();
@@ -140,7 +147,7 @@ $menu_1->append($menu_toolbar);
 
 $menu_new_par = Gtk2::CheckMenuItem->new_with_mnemonic('Automatic new _paragraph');
 $menu_new_par->set_active(TRUE);
-$menu_new_par->signal_connect('toggled', \&toggle_par);
+$menu_new_par->signal_connect('toggled', \&toggle_par, [qw/$view $pango_layout $window/]);
 $menu_1->append($menu_new_par);
 
 $menu_view = Gtk2::MenuItem->new_with_mnemonic("_View");
@@ -180,7 +187,7 @@ $toolbar->insert_stock('gtk-justify-right', 'Right Align', undef, \&justify, 'ri
 $vbox = Gtk2::VBox->new(FALSE, 0);
 $vbox->pack_start($menubar, FALSE, FALSE, 0);
 $vbox->pack_start($toolbar, FALSE, FALSE, 0);
-$vbox->pack_start($scrolled, TRUE, TRUE, 0);
+$vbox->pack_start($notebook, TRUE, TRUE, 0);
 
 # Now add the VBox to the Window...
 $window->add($vbox);
@@ -189,6 +196,7 @@ $window->add_accel_group($accel);
 # ...and show everything ever created in this Program.
 $window->show_all();
 
+$view->grab_focus;
 # Start lopping
 Gtk2->main();
 # The program should never reach this point, but we give an exit with no errors just in case
@@ -231,27 +239,23 @@ sub new {
 	my $local_buff = $view->get_buffer();
 	my $start_iter = $local_buff->get_start_iter;
 	my $end_iter = $local_buff->get_end_iter;
+	my $empty = TRUE;	
 	
-	my $bool;
 	# If the current buffer isn't empty shows a question. 
 	if ($local_buff->get_char_count() != 0) {
-		my $dialog = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no', "The buffer isn't empty, going on to create a new buffer will destroy the present buffer. you want to go on?");
-		if('no' eq $dialog->run) {
-			$bool = 0;
-		}
-		else {
-			$bool = 1;
-		}
-		$dialog->destroy();
+		$empty = FALSE;	
 	}
-	if ($bool) {# if previous question was answered yes
-		$local_buff->delete($start_iter, $end_iter);
-		$view->set_buffer($local_buff);
+	if(!$empty) {
+		my $local_scrolled = Gtk2::ScrolledWindow->new(undef, undef);
+		$local_scrolled->set_policy("automatic", "automatic");
+		my $local_view = Gtk2::TextView->new();
+		$local_scrolled->add_with_viewport($local_view);
+		$notebook->append_page($local_scrolled, Gtk2::Label->new("Untitled"));
+		$notebook->show_all;
 	}
 	else {
 		return;
 	}
-	$window->set_title("PG2E - Perl Gtk2 Editor - New Buffer");
 	$ARGV[0] = undef;
 	$curr_name = undef;
 	$saved = 0;# We know that the current buffer hasn't been saved.
@@ -261,13 +265,16 @@ sub new {
 # Saves the buffer to a file
 sub save_buff {
 	
-	my $local_buff = $view->get_buffer;
-	
 	my $f_name;
 	my $txt;
+	my $local_scrolled = $notebook->get_nth_page($notebook->get_current_page);
+	my $local_viewport = $local_scrolled->get_child;
+	my $local_view = $local_viewport->get_child;
+	my $local_buff = $local_view->get_buffer;
 	
 	my $start_iter = $local_buff->get_start_iter;
         my $end_iter = $local_buff->get_end_iter;
+	
 	# If the buffer is empty we have nothing to save.
 	if ($local_buff->get_char_count() == 0) {
 		my $diag = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'error', 'ok', 'The buffer is empty. Nothing to save');
@@ -323,39 +330,40 @@ sub save_with_name {
 sub read_buff {
 	
 	my $local_buff = $view->get_buffer;
-	my $go_on = 1;
 	my $f_name;
 	my $txt;
-	
-	if ($local_buff->get_char_count != 0) {
-		my $diag = Gtk2::MessageDialog->new($window, [qw/modal destroy-with-parent/], 'question', 'yes_no', "The buffer isn't empty. Reading from file will destroy this buffer.\nYou want to read from a file?");
-		if ($diag->run eq 'yes') {
-			$go_on = 1;
-		}
-		else {
-			$go_on = 0;
-		}
-		$diag->destroy;
+	my $empty = TRUE;
+	if($local_buff->get_char_count) {
+		$empty = FALSE;
 	}
-	if ($go_on) {
-		my $f_chsr = Gtk2::FileChooserDialog->new("Open", $window, 'open', 'gtk-open', 'accept', 'gtk-cancel', 'cancel');
-		if ($f_chsr->run eq 'accept') {
-			$f_name = $f_chsr->get_filename;
-			$txt = read_f($f_name);
-			$local_buff = Gtk2::TextBuffer->new();
-			$local_buff->set_text($txt);
-			$view->set_buffer($local_buff);
+	my $local_scrolled = Gtk2::ScrolledWindow->new(undef, undef);
+	my $local_view = Gtk2::TextView->new();
+	my $f_chsr = Gtk2::FileChooserDialog->new("Open", $window, 'open', 'gtk-open', 'accept', 'gtk-cancel', 'cancel');
+	
+	if ($f_chsr->run eq 'accept') {
+		$f_name = $f_chsr->get_filename;
+		$txt = read_f($f_name);
+		$local_buff = Gtk2::TextBuffer->new();
+		$local_buff->set_text($txt);
+		if(!$empty) {
+			$local_view->set_buffer($local_buff);
 			$f_chsr->destroy;
+			$local_scrolled->add_with_viewport($local_view);
+			$notebook->append_page($local_scrolled, Gtk2::Label->new($f_name));
+			$notebook->show_all;
 		}
 		else {
-			$f_chsr->destroy;
-			return;
+			$view->set_buffer($local_buff);
+			$notebook->set_tab_label($scrolled, Gtk2::Label->new($f_name));
 		}
+
+		$f_chsr->destroy;
 	}
 	else {
+		$f_chsr->destroy;
 		return;
 	}
-	$window->set_title("PG2E - Perl Gtk2 Editor - $f_name");
+
 	$curr_name = $f_name;
 	$saved = 0;
 	return;
